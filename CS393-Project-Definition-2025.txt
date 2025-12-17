@@ -1,0 +1,835 @@
+ 
+
+Contents 
+DELIVERABLES and DEADLINES ..................................................................................................................... 2 
+PROJECT DETAILS ........................................................................................................................................... 2 
+Base Technical Requirements and Rules ................................................................................................... 2 
+RESTful Service Definitions ........................................................................................................................ 3 
+Main Objects And Properties .................................................................................................................... 7 
+GRADING ....................................................................................................................................................... 8 
+Grading Rules For Delivery-1 ..................................................................................................................... 8 
+Grading Rules For Delivery-2 ..................................................................................................................... 9 
+Grading Rules For Delivery-3 ..................................................................................................................... 9 
+Penalties .................................................................................................................................................... 9 
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+● This assessment must be prepared and finalized individually or as a team. 
+● You must upload your project into LMS as an archive file. 
+
+
+ 
+
+ 
+
+
+DELIVERABLES and DEADLINES 
+
+You'll work on your project step by step. The required features for each stage are listed below. After 
+completing the relevant parts, upload your project to the LMS by the specified deadline. Please do not 
+include any code other than what is required, and make sure the project you upload is working properly. 
+
+DELIVERABLES 
+
+Weight 
+
+Deadline 
+
+Expectation 
+
+initial project 
+setup & domain 
+model 
+
+%5 
+
+November 9, 
+2025 
+
+• SpringBoot project with related dependencies must be 
+created 
+• Domain classes and relations must be created(not entities) 
+• A UML class diagram to show object relations is provided 
+
+
+database&JPA 
+config&testing 
+
+%15 
+
+November 
+30, 2025 
+
+ 
+
+• Database configuration must be completed 
+• Entity definitions must be completed. 
+• The application must insert initial data to the database when 
+it is started (you can use insert scripts or SpringBoot 
+Runners) 
+• All Spring Data JPA repositories must be created 
+• All service layer codes needed by the controller layer (Restful 
+services) must be completed. 
+• Junit tests for all service methods must be developed 
+
+
+Restful 
+services&testing 
+
+&demo 
+
+%20 
+
+December 
+21, 2025 
+
+All requirements defined in this document must be completed. 
+
+ 
+
+ 
+
+
+
+ 
+
+PROJECT DETAILS 
+
+Suppose that you are working in a company as a software developer. Your company is developing a 
+(Vurgulama yorumu spart
+25.10.2025 11:10:22
+boş)
+Car 
+Rental Application. A web application and a mobile application will be developed. Your team is 
+responsible for developing all required Restful services which are required for web/mobile applications. 
+
+Base Technical Requirements and Rules 
+
+1. Create a Spring Boot web application. Use JPA and Spring Data JPA. You are not allowed to use pure 
+JDBC and Spring JdbcTemplate. But you can use native SQL in the Data JPA Repositories. 
+2. Generate an API documentation for your Restful services using OpenAPI (Swagger). Be careful, you 
+will not develop a web application, you will use Swagger and it will produce the related API 
+documentation. 
+3. You are not allowed to use Entity Objects for the input and output of Restful services(in Controller 
+layer). Your services should only accept and return Data Transfer Objects(DTO). You can use 
+projection methods or a mapping library like mapstruct (https://mapstruct.org ) for such 
+transformations. 
+4. You are free to choose any database, but please avoid using any database-specific commands in 
+your project. 
+5. Switching to another database must be done easily by changing only application.properties file and 
+the dependencies. 
+
+
+
+6. You must initialize your database automatically with at least one record in each table. You are free to 
+select any method you like for initialization. 
+7. Draw a UML class diagram for your model classes. 
+8. Develop seperate service classes for each entity. For example: ReservationService, CarService, 
+MemberService etc. 
+a. All service classes should contain all base methods for related Entity. For example your 
+MemberService should contain methods for creating, reading a member and returning all 
+members 
+b. If you need, you can add extra methods for updating entity. 
+c. You should also add any other required methods according to the business requirements(see 
+below) 
+
+
+
+9. Develop separate controller classes according to the RESTful Services requirements (listed below). 
+For example: ReservationController, CarController, CarServiceController, MemberController etc 
+10. Use a 3-layer architecture: Controller-Service-Repository. You can call Service beans from the 
+Controller, and you can call Repository beans from the Service beans. However, you cannot call 
+Repository classes directly from RestController classes 
+11. Add Junit tests for testing all of your service methods 
+12. Apply resource naming rules. 
+13. It is forbidden to use FetchType.EAGER 
+14. It is forbidden to use CascadeType.ALL and CascadeType.REMOVE. You can use the other cascade 
+types depending on your requirements. 
+
+
+RESTful Service Definitions 
+
+Develop all necessary Restful services to satisfy all the UI service requirements listed below. 
+
+# 
+
+Service Name 
+
+Service input/output parameters and business rules 
+
+1 
+
+Search available 
+cars 
+
+ 
+
+Input parameters: 
+
+• category (optional) 
+• transmission type (optional) 
+• daily price range (optional) 
+• pick-up date (required) 
+• drop-off date (required) 
+• number of seats (optional) 
+• pickup location (required) 
+
+
+ 
+
+Return Value : 
+
+available car list. 
+
+ 
+
+Business Rules: 
+
+• Search for cars that match the entered criteria. Don't forget to check 
+availability of cars: 
+o Car statu must be "Available" (Check car’s statu) 
+o Car must not be booked between the specified dates(Check all 
+active reservations). 
+
+
+
+• Be careful when creating your query: if a parameter is left blank, do not 
+add it to your query 
+
+
+ 
+
+
+
+
+Return Http Status Codes: 
+
+• 200 => if available cars are found 
+• 404 => if there is no available cars 
+
+
+2 
+
+Make a 
+reservation 
+
+Input parameters: 
+
+• Car barcode number 
+• Pick-up date and time 
+• Drop-off date and time 
+• Member id 
+• Pick-up location code 
+• Drop-off location code 
+• Extra list 
+
+
+Return Value : 
+
+• Reservation number 
+• Pick-up date-time 
+• Drop-off date-time 
+• Pick-up location code and name 
+• Drop-off location code and name 
+• Total amount 
+• Member id 
+• Member name 
+
+
+ 
+
+Business Rules: 
+
+Before making reservation you should check the car status again 
+
+1. If status is not “Available” you can’t complete the reservation. You should 
+send 406-Not Acceptable status code. In this case don’t create & save any 
+Reservation object. 
+2. If car status is Available you can complete reservation and send 200 Http 
+status code. Following requirements must be provided: 
+a. Generate a unique 8 digits reservation number in the Service layer. 
+b. Set Reservation statu ACTIVE 
+c. Assign reservation create date as sysdate 
+d. Assign pick-up date and drop-off date 
+e. Compute total amount : dayCount * car daily price + extra list 
+prices 
+f. Don’t save total amount into database, it must be calculated 
+when requested 
+
+
+
+
+
+Return Http Status Codes: 
+
+• 200 – if the reservation is completed successfully 
+• 206 – if selected car is not available 
+
+
+
+
+
+3 
+
+Get all rented 
+cars 
+
+Input parameters: 
+
+none 
+
+ 
+
+Return Value : 
+
+List all cars that are currently rented (The reservation must be in Active status 
+on the system date) . 
+
+Each object should contain following values: 
+
+• Brand 
+• Model 
+• Car type 
+• Transmission type 
+• Barcode number 
+• Reservation Number 
+• Member name 
+• Drop-off date and time 
+• Drop-off location 
+• Reservation day count 
+
+
+Business Rules: 
+
+none 
+
+ 
+
+Return Http Status Codes: 
+
+• 200 => OK 
+• 404 => if no rented cars 
+
+
+4 
+
+Add an extra to a 
+reservation 
+
+Input parameters: 
+
+• Reservation number 
+• Code for extra service/equipment 
+
+
+ 
+
+Return Value : 
+
+boolean 
+
+ 
+
+Business Rules: 
+
+• Return true if adding process is completed successfully. 
+• Return false if extra is already added or code is not found 
+
+
+ 
+
+Return Http Status Codes: 
+
+• 200 – OK – if extra is added successfully 
+• 404 – Not Found – if selected extra is not found 
+• 500 – if an exception thrown 
+
+
+
+
+
+5 
+
+Return the car 
+
+Input parameters: 
+
+• Reservation number 
+
+
+Return Value : 
+
+boolean 
+
+ 
+
+Business Rules: 
+
+• Return true if vehicle return is completed successfully. 
+o Update reservation as follows: 
+▪ Status=COMPLETED 
+▪ Return date = system date 
+
+
+
+o If dropOffLocation of reservation is different from location of 
+the car then update location of the car. 
+
+
+
+• Otherwise, do nothing and return false 
+
+
+Return Http Status Codes: 
+
+• 200 – OK – if the car return is completed successfully 
+• 404 – Not Found – if the car(or reservarion) is not found 
+• 500 – if an exception is thrown 
+
+
+6 
+
+Cancel a 
+reservation 
+
+Input parameters: 
+
+• Reservation number 
+
+
+Return Value : 
+
+boolean 
+
+ 
+
+Business Rules: 
+
+• Return true if the reservation is cancelled successfully. Then update the 
+reservation status as CANCELLED 
+• Return false if the reservation is not cancelled successfully 
+
+
+ 
+
+Return Http Status Codes: 
+
+• 200 – OK – if the reservation is cancelled successfully 
+• 404 – Not Found – if reservation number is not found 
+• 500 – if an any exception thrown 
+
+
+7 
+
+Delete a car 
+
+Input parameters: 
+
+• Car barcode number 
+
+
+Return Value : 
+
+boolean 
+
+ 
+
+Business Rules: 
+
+• If car has been used for any reservation, do not delete the car and 
+return "false". 
+• Otherwise, you can delete the car. 
+
+
+Return Http Status Codes: 
+
+• 200 – OK – if delete operation is completed successfully 
+• 404 – Not Found – if car is not found 
+• 406 – Not Acceptable – if car is used in a reservation 
+• 500 – if an exception is thrown 
+
+
+
+
+
+8 
+
+Delete a 
+reservation 
+
+Input parameters: 
+
+• Reservation number 
+
+
+Return Value : 
+
+boolean 
+
+ 
+
+Return Http Status Codes: 
+
+• 200 – OK – when deletion is successfull 
+• 404 – Not Found – if no reservation is found 
+• 500 – if an exception is thrown 
+
+
+ 
+
+Rules: 
+
+Do not use Cascade.Remove on Reservation. When a reservation is removed, 
+do not remove the related car and member. You must first disassociate them 
+from the reservation. 
+
+
+
+ 
+
+Main Objects And Properties 
+
+The classes and properties listed below are only a rough draft. For the actual design, please carefully 
+review the service requirements defined in this document. You may need to add new classes or 
+properties 
+
+Member 
+
+All members can search the catalog, as well as reserve, pick-up, and return a car. 
+
+Members can have 
+
+• Name 
+• Address 
+• Email 
+• Phone 
+• Driving license number 
+
+
+ 
+
+A member can reserve more than one cars 
+
+Reservation 
+
+Responsible for managing reservations for a car. 
+
+Reservation may have 
+
+• Reservation number (must be autogenerated 8 digit string) 
+• Creation date 
+• Pick-up date and time 
+• Drop-off date and time 
+• Pick-up location 
+• Drop-off location 
+• Return date 
+• Statu 
+• Member 
+• Car 
+• Extras 
+• … 
+
+
+Reservation can have different status: 
+
+ACTIVE, COMPLETED, CANCELLED 
+
+ 
+
+A car can be used for another reservation 
+
+
+
+
+Location 
+
+ 
+
+The car rental system has multiple locations, each location has attributes like 
+code, ‘Name’ to distinguish it from any other locations. 
+
+Each location has a code and a name. Such as: 
+
+• 1-İstanbul Airport 
+• 2-İstanbul Sabiha Gökçen Airport 
+• 3-İstanbul Kadıköy 
+• 4-İzmir City Center 
+
+
+Car 
+
+The basic building block of the system. Every car has a barcode, license plate 
+number, number of seats, brand, model, mileage, transmission type, dailyPrice, 
+category, location etc. 
+
+ 
+
+Some of the categories are: 
+
+• Compact car 
+• Mid-size car 
+• Large car 
+• Station wagon 
+• Luxury car 
+• Minivans 
+• SUVs 
+
+
+Car status can be one of them: 
+
+• AVAILABLE 
+• BEING_SERVICED 
+
+
+ 
+
+Transmission types: 
+
+• Automatic 
+• Manual 
+
+
+Extra 
+Service/Equipment 
+
+Stores details about the various types of extras that members can add to their 
+reservation. Some of them are: 
+
+• Additional driver 
+• Infant car seat 
+• Car seat 
+• GPS 
+• Snow chains 
+• Snow tires 
+• Wifi router 
+
+
+Each extra has a name and price. Price is not daily. 
+
+
+
+GRADING 
+
+Grading Rules For Delivery-1 
+
+ 
+
+TASK 
+
+Points 
+
+1 
+
+SpringBoot project with related dependencies must be created 
+
+30 
+
+2 
+
+Domain classes and relations must be created 
+
+40 
+
+3 
+
+UML class diagram to show object relations is provided 
+
+30 
+
+
+
+ 
+
+
+Grading Rules For Delivery-2 
+
+ 
+
+TASK 
+
+Points 
+
+1 
+
+Database configuration 
+
+10 
+
+2 
+
+Entity definitions 
+
+20 
+
+3 
+
+Initial data insertion 
+
+10 
+
+4 
+
+Spring Data JPA repositories 
+
+20 
+
+5 
+
+Service layer development 
+
+20 
+
+6 
+
+Junit tests for all service methods 
+
+20 
+
+
+
+ 
+
+Grading Rules For Delivery-3 
+
+ 
+
+Tasks 
+
+Points 
+
+1 
+
+API Documentation - swagger 
+
+12 
+
+2 
+
+Using DTO for input and output in the service and controller level 
+
+12 
+
+3 
+
+Search available cars 
+
+12 
+
+4 
+
+Make a reservation 
+
+12 
+
+5 
+
+Get all rented cars 
+
+10 
+
+6 
+
+Add an extra to a reservation 
+
+9 
+
+7 
+
+Return the car 
+
+8 
+
+8 
+
+Cancel a reservation 
+
+7 
+
+9 
+
+Delete a car 
+
+8 
+
+10 
+
+Delete a reservation 
+
+10 
+
+
+
+ 
+
+Penalties 
+
+1 
+
+Project is not a SpringBoot project 
+
+Failure Reason 
+
+2 
+
+There are database-specific codes 
+
+[-50,-1] 
+
+3 
+
+Using CascadeType.REMOVE or CascadeType.ALL 
+
+[-50,-1] 
+
+4 
+
+Using FetchType.Eager 
+
+[-50,-1] 
+
+5 
+
+not following resource naming rules 
+
+[-20,-1] 
+
+6 
+
+not using SpringDataJPA repositories 
+
+Failure Reason 
+
+7 
+
+No separate Controller classes for base entities 
+
+[-50,-1] 
+
+8 
+
+Layered architecture not used. (3 layers: Controller-Service-Repository) 
+
+[-50,-1] 
+
+9 
+
+Using pure JDBC or JdbcTemplate 
+
+Failure Reason 
+
+
+
+ 
+
+
