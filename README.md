@@ -1,1 +1,0 @@
-bu proje adamdır
