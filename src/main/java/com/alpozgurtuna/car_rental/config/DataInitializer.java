@@ -114,60 +114,95 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private Location createLocation(String code, String name) {
-        Location location = new Location();
-        location.setCode(code);
-        location.setName(name);
-        return locationService.createLocation(location);
+        try {
+            return locationService.getLocationByCode(code);
+        } catch (Exception e) {
+            Location location = new Location();
+            location.setCode(code);
+            location.setName(name);
+            return locationService.createLocation(location);
+        }
     }
 
     private Extra createExtra(String code, String name, BigDecimal price) {
-        Extra extra = new Extra();
-        extra.setCode(code);
-        extra.setName(name);
-        extra.setPrice(price);
-        return extraService.createExtra(extra);
+        try {
+            // Try to create first
+            Extra extra = new Extra();
+            extra.setCode(code);
+            extra.setName(name);
+            extra.setPrice(price);
+            return extraService.createExtra(extra);
+        } catch (Exception e) {
+            // If creation fails (likely due to unique constraint), try to find by name
+            // Since we don't have getByCode in service and can't add it, we rely on name
+            try {
+                return extraService.getExtraByName(name);
+            } catch (Exception ex) {
+                log.warn("Could not create or find extra with code: {}", code);
+                return null;
+            }
+        }
     }
 
     private Member createMember(String name, String address, String email, String phone, String drivingLicense) {
-        Member member = new Member();
-        member.setName(name);
-        member.setAddress(address);
-        member.setEmail(email);
-        member.setPhone(phone);
-        member.setDrivingLicenseNumber(drivingLicense);
-        return memberService.createMember(member);
+        try {
+            return memberService.getMemberByEmail(email);
+        } catch (Exception e) {
+            Member member = new Member();
+            member.setName(name);
+            member.setAddress(address);
+            member.setEmail(email);
+            member.setPhone(phone);
+            member.setDrivingLicenseNumber(drivingLicense);
+            return memberService.createMember(member);
+        }
     }
 
     private Car createCar(String barcode, String licensePlate, String brand, String model,
             int seats, long mileage, TransmissionType transmission,
             BigDecimal dailyPrice, CarCategory category, Location location) {
-        Car car = new Car();
-        car.setBarcode(barcode);
-        car.setLicensePlate(licensePlate);
-        car.setBrand(brand);
-        car.setModel(model);
-        car.setNumberOfSeats(seats);
-        car.setMileage(mileage);
-        car.setTransmissionType(transmission);
-        car.setDailyPrice(dailyPrice);
-        car.setCategory(category);
-        car.setStatus(CarStatus.AVAILABLE);
-        car.setLocation(location);
-        return carService.createCar(car);
+        try {
+            return carService.getCarByBarcode(barcode);
+        } catch (Exception e) {
+            Car car = new Car();
+            car.setBarcode(barcode);
+            car.setLicensePlate(licensePlate);
+            car.setBrand(brand);
+            car.setModel(model);
+            car.setNumberOfSeats(seats);
+            car.setMileage(mileage);
+            car.setTransmissionType(transmission);
+            car.setDailyPrice(dailyPrice);
+            car.setCategory(category);
+            car.setStatus(CarStatus.AVAILABLE);
+            car.setLocation(location);
+            return carService.createCar(car);
+        }
     }
 
     private void createReservation(Member member, Car car, Location pickUp, Location dropOff,
             LocalDateTime pickUpDate, LocalDateTime dropOffDate,
             java.util.List<Extra> extras) {
-        ReservationRequestDTO request = new ReservationRequestDTO();
-        request.setCarBarcode(car.getBarcode());
-        request.setMemberId(member.getId());
-        request.setPickUpLocationCode(pickUp.getCode());
-        request.setDropOffLocationCode(dropOff.getCode());
-        request.setPickUpDateTime(pickUpDate);
-        request.setDropOffDateTime(dropOffDate);
-        request.setExtraCodes(extras.stream().map(Extra::getCode).collect(Collectors.toList()));
+        try {
+            ReservationRequestDTO request = new ReservationRequestDTO();
+            request.setCarBarcode(car.getBarcode());
+            request.setMemberId(member.getId());
+            request.setPickUpLocationCode(pickUp.getCode());
+            request.setDropOffLocationCode(dropOff.getCode());
+            request.setPickUpDateTime(pickUpDate);
+            request.setDropOffDateTime(dropOffDate);
+            
+            // Filter out null extras if any failed to be created/found
+            java.util.List<String> extraCodes = extras.stream()
+                .filter(e -> e != null)
+                .map(Extra::getCode)
+                .collect(Collectors.toList());
+                
+            request.setExtraCodes(extraCodes);
 
-        reservationService.createReservation(request);
+            reservationService.createReservation(request);
+        } catch (Exception e) {
+            log.warn("Could not create reservation for car {}: {}", car.getBarcode(), e.getMessage());
+        }
     }
 }
